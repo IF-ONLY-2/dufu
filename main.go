@@ -1,43 +1,63 @@
 package main
 
 import (
-    "encoding/binary"
-    "fmt"
-    "log"
-    "os"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"strconv"
+
+	"github.com/edsrzf/mmap-go"
 )
 
 func main() {
-    var command uint16
-    fUIO, err := os.OpenFile("/dev/uio0", os.O_RDWR, 0755)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer fUIO.Close()
-    fConfig, err := os.OpenFile("/sys/class/uio/uio0/device/config", os.O_RDWR, 0755)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer fConfig.Close()
-    var bufCommand = make([]byte, 2)
-    _, err = fConfig.ReadAt(bufCommand, 4)
-    if err != nil {
-        log.Fatal(err)
-    }
-    command = binary.LittleEndian.Uint16(bufCommand) & ^PCI_COMMAND_INTX_DISABLE
-    fmt.Println(commandString(command))
-    binary.LittleEndian.PutUint16(bufCommand, command)
-    var intBuf = make([]byte, 4)
-    for i := 0; i < 10; i++ {
-        fmt.Println("read count", i)
-        _, err = fConfig.WriteAt(bufCommand, 4)
-        if err != nil {
-            log.Fatal(err)
-        }
-        _, err = fUIO.Read(intBuf)
-        if err != nil {
-            log.Fatal(err)
-            break
-        }
-    }
+	fUIO, err := os.OpenFile("/dev/uio1", os.O_RDWR, 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fUIO.Close()
+
+	fa, err := os.Open("/sys/class/uio/uio1/maps/map0/addr")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fa.Close()
+
+	fs, err := os.Open("/sys/class/uio/uio1/maps/map0/size")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fs.Close()
+	addrBuf, err := ioutil.ReadAll(fa)
+	if err != nil {
+		log.Fatal(err)
+	}
+	sizeBuf, err := ioutil.ReadAll(fs)
+	if err != nil {
+		log.Fatal(err)
+	}
+	addr, err := strconv.ParseUint(string(addrBuf[2:len(addrBuf)-1]), 16, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+	size, err := strconv.ParseUint(string(sizeBuf[2:len(sizeBuf)-1]), 16, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+	m, err := mmap.MapRegion(fUIO, int(size), mmap.RDWR, 0, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("virtual address: %p\n", &m[0])
+	fmt.Printf("physical address: %x\n", addr)
+	fmt.Printf("mapping size: %d\n", size)
+	var intBuf = make([]byte, 4)
+	for i := 0; i < 10; i++ {
+		fmt.Println("read count", i)
+		_, err = fUIO.Read(intBuf)
+		if err != nil {
+			log.Fatal(err)
+			break
+		}
+	}
 }

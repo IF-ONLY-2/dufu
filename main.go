@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,20 +11,23 @@ import (
 	"github.com/edsrzf/mmap-go"
 )
 
-func main() {
-	fUIO, err := os.OpenFile("/dev/uio1", os.O_RDWR, 0755)
+func tmain() {
+	var uio string
+	flag.StringVar(&uio, "uio", "uio0", "uio device name")
+
+	fUIO, err := os.OpenFile(fmt.Sprintf("/dev/%s", uio), os.O_RDWR, 0755)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer fUIO.Close()
 
-	fa, err := os.Open("/sys/class/uio/uio1/maps/map0/addr")
+	fa, err := os.Open(fmt.Sprintf("/sys/class/uio/%s/maps/map0/addr", uio))
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer fa.Close()
 
-	fs, err := os.Open("/sys/class/uio/uio1/maps/map0/size")
+	fs, err := os.Open(fmt.Sprintf("/sys/class/uio/%s/maps/map0/size", uio))
 	if err != nil {
 		log.Fatal(err)
 	}

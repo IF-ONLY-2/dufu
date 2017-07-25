@@ -1,10 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"encoding/binary"
+	"flag"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
+	"syscall"
 )
 
 const (
@@ -20,6 +25,14 @@ const (
 	PCI_COMMAND_SERR                = 0x100 /* Enable SERR */
 	PCI_COMMAND_FAST_BACK           = 0x200 /* Enable back-to-back writes */
 	PCI_COMMAND_INTX_DISABLE uint16 = 0x400 /* INTx Emulation Disable */
+)
+
+const (
+	// At most there 6 BARs from 0 to 5, but most devices just use 2 or 3 BARs.
+	PCI_MAX_RESOURCE = 6
+	// IO resource type: //
+	IORESOURCE_IO  = 0x00000100
+	IORESOURCE_MEM = 0x00000200
 )
 
 // I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
@@ -85,14 +98,76 @@ func commandString(i uint16) string {
 	s = s[:len(s)-1]
 	return s
 }
-func pcimain() {
-	var command uint16
-	fUIO, err := os.OpenFile("/dev/uio0", os.O_RDWR, 0755)
+
+type MemResource struct {
+	PhysicalAddress uint64
+	Length          uint64
+	Address         []byte
+}
+
+func parseResource(file string) []MemResource {
+	fResource, err := os.Open(file)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
+	defer fResource.Close()
+	var mrs []MemResource
+	lineReader := bufio.NewReader(fResource)
+	for i := 0; i < PCI_MAX_RESOURCE; i++ {
+		line, err := lineReader.ReadString('\n')
+		if err != nil {
+			panic(err)
+		}
+		ss := strings.Split(line, " ")
+		addr, err := strconv.ParseUint(ss[0][2:len(ss[0])-1], 16, 64)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("addr 0x%x\n",addr)
+		end, err := strconv.ParseUint(ss[1][2:len(ss[1])-1], 16, 64)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("end 0x%x\n",end)
+		flags, err := strconv.ParseUint(ss[2][2:len(ss[2])-1], 16, 64)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("0x%x\n", flags)
+		if flags&IORESOURCE_MEM == 0 {
+			continue
+		}
+		fmt.Println("opening", fmt.Sprintf("%s%d", file, i))
+		f, err := os.OpenFile(fmt.Sprintf("%s%d", file, i), os.O_RDWR, 0755)
+		if err != nil {
+			panic(err)
+		}
+		address, err := syscall.Mmap(int(f.Fd()), 0, int(end-addr+1), syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_SHARED)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("CTRL 0x%x\n", uint32(address[0]) + uint32(address[1]) << 8 + uint32(address[2]) << 16 + uint32(address[3]) << 24)
+		mrs = append(mrs, MemResource{
+			PhysicalAddress: addr,
+			Length:          end - addr + 1,
+			Address:         address,
+		})
+		fmt.Println(ss)
+		fmt.Println(line)
+	}
+	fmt.Println(mrs)
+	return mrs
+}
+
+func main() {
+	var command uint16
+	var uio string
+	flag.StringVar(&uio, "uio", "uio0", "uio device name")
+
+	fUIO, err := os.OpenFile(fmt.Sprintf("/dev/%s", uio), os.O_RDWR, 0755)
+
 	defer fUIO.Close()
-	fConfig, err := os.OpenFile("/sys/class/uio/uio0/device/config", os.O_RDWR, 0755)
+	fConfig, err := os.OpenFile(fmt.Sprintf("/sys/class/uio/%s/device/config", uio), os.O_RDWR, 0755)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,6 +180,9 @@ func pcimain() {
 	command = binary.LittleEndian.Uint16(bufCommand) & ^PCI_COMMAND_INTX_DISABLE
 	fmt.Println(commandString(command))
 	binary.LittleEndian.PutUint16(bufCommand, command)
+	mrs := parseResource(fmt.Sprintf("/sys/class/uio/%s/device/resource", uio))
+
+	fmt.Println(&(mrs[0].Address[0]))
 	var intBuf = make([]byte, 4)
 	for i := 0; i < 10; i++ {
 		fmt.Println("read count", i)

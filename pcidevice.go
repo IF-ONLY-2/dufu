@@ -1,10 +1,7 @@
-package bus
-
-type Device struct {
-}
+package dufu
 
 type PCIDevice struct {
-	PCIAddress 
+	PCIAddress
 	Vendor          uint16
 	Device          uint16
 	SubsystemVendor uint16
@@ -17,7 +14,10 @@ type PCIDevice struct {
 
 	Driver string
 	Mem    []MemResource
+
+	HwAddress []byte
 }
-func (p PCIDevice)Name()string{
-return p.name
+
+func (p PCIDevice) Name() string {
+	return p.name
 }

@@ -1,4 +1,4 @@
-package bus
+package dufu
 
 type Bus interface {
 	Name() string
@@ -8,7 +8,7 @@ type Bus interface {
 
 var buses = map[string]Bus{}
 
-func Register(bus Bus) {
+func RegisterBus(bus Bus) {
 	buses[bus.Name()] = bus
 }
 

@@ -1,4 +1,4 @@
-package bus
+package dufu
 
 import (
 	"testing"
@@ -7,5 +7,8 @@ import (
 func TestPCIBusScan(t *testing.T) {
 	for _, bus := range buses {
 		bus.Scan()
+	}
+	for _, bus := range buses {
+		bus.Probe()
 	}
 }

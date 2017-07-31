@@ -1,4 +1,4 @@
-package main
+package dufu
 
 type Driver interface {
 	Probe()

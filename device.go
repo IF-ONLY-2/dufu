@@ -1,8 +1,8 @@
-package device
+package dufu
 
 var devices = map[string]Device{}
 
-type Device interface{
+type Device interface {
 	Name() string
 }
 

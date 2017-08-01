@@ -4,6 +4,7 @@ import (
 	"os"
 	"syscall"
 	"unsafe"
+	"net"
 )
 
 const (
@@ -12,7 +13,6 @@ const (
 	IFF_NO_PI = 0x1000
 )
 
-//  ifReq is a helper function, to call TUNSETIFF ioctl
 type ifReq struct {
 	Name  [0x10]byte
 	Flags uint16
@@ -25,7 +25,13 @@ func NewTAP(name string) (*TapDevice, error) {
 	if err != nil {
 		return nil, err
 	}
-	var req ifReq
+
+	//  ifReq is a helper struct, to call TUNSETIFF ioctl
+	req := struct {
+		Name  [0x10]byte
+		Flags uint16
+		pad   [0x28 - 0x10 - 2]byte
+	}{}
 	req.Flags = IFF_TAP | IFF_NO_PI
 	copy(req.Name[:], name)
 	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, file.Fd(), uintptr(syscall.TUNSETIFF), uintptr(unsafe.Pointer(&req)))
@@ -33,11 +39,13 @@ func NewTAP(name string) (*TapDevice, error) {
 		err = errno
 		return nil, err
 	}
+	_, _, errno = syscall.Syscall(syscall.SYS_IOCTL, file.Fd(), uintptr(syscall.SIOCGIFHWADDR), uintptr(unsafe.Pointer(&req)))
 	return &TapDevice{
 		File: file,
 	}, err
 }
 
 type TapDevice struct {
+	net.HardwareAddr
 	*os.File
 }

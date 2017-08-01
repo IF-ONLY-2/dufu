@@ -1,4 +1,4 @@
-package main
+package dufu
 
 import (
 	"flag"
@@ -11,7 +11,7 @@ import (
 	"github.com/edsrzf/mmap-go"
 )
 
-func tmain() {
+func testmain() {
 	var uio string
 	flag.StringVar(&uio, "uio", "uio0", "uio device name")
 

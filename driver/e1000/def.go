@@ -369,36 +369,36 @@ const (
 	// E1000_PFVFGOTLBC(_n)	(0x010050 + (0x100 * (_n)))
 
 	/* LinkSec */
-	E1000_LSECTXUT         = 0x04300                   /* Tx Untagged Pkt Cnt */
-	E1000_LSECTXPKTE       = 0x04304                   /* Encrypted Tx Pkts Cnt */
-	E1000_LSECTXPKTP       = 0x04308                   /* Protected Tx Pkt Cnt */
-	E1000_LSECTXOCTE       = 0x0430C                   /* Encrypted Tx Octets Cnt */
-	E1000_LSECTXOCTP       = 0x04310                   /* Protected Tx Octets Cnt */
-	E1000_LSECRXUT         = 0x04314                   /* Untagged non-Strict Rx Pkt Cnt */
-	E1000_LSECRXOCTD       = 0x0431C                   /* Rx Octets Decrypted Count */
-	E1000_LSECRXOCTV       = 0x04320                   /* Rx Octets Validated */
-	E1000_LSECRXBAD        = 0x04324                   /* Rx Bad Tag */
-	E1000_LSECRXNOSCI      = 0x04328                   /* Rx Packet No SCI Count */
-	E1000_LSECRXUNSCI      = 0x0432C                   /* Rx Packet Unknown SCI Count */
-	E1000_LSECRXUNCH       = 0x04330                   /* Rx Unchecked Packets Count */
-	E1000_LSECRXDELAY      = 0x04340                   /* Rx Delayed Packet Count */
-	E1000_LSECRXLATE       = 0x04350                   /* Rx Late Packets Count */
-	E1000_LSECRXOK    (_n) = (0x04360 + (0x04 * (_n))) /* Rx Pkt OK Cnt */
-	E1000_LSECRXINV   (_n) = (0x04380 + (0x04 * (_n))) /* Rx Invalid Cnt */
-	E1000_LSECRXNV    (_n) = (0x043A0 + (0x04 * (_n))) /* Rx Not Valid Cnt */
-	E1000_LSECRXUNSA       = 0x043C0                   /* Rx Unused SA Count */
-	E1000_LSECRXNUSA       = 0x043D0                   /* Rx Not Using SA Count */
-	E1000_LSECTXCAP        = 0x0B000                   /* Tx Capabilities Register - RO */
-	E1000_LSECRXCAP        = 0x0B300                   /* Rx Capabilities Register - RO */
-	E1000_LSECTXCTRL       = 0x0B004                   /* Tx Control - RW */
-	E1000_LSECRXCTRL       = 0x0B304                   /* Rx Control - RW */
-	E1000_LSECTXSCL        = 0x0B008                   /* Tx SCI Low - RW */
-	E1000_LSECTXSCH        = 0x0B00C                   /* Tx SCI High - RW */
-	E1000_LSECTXSA         = 0x0B010                   /* Tx SA0 - RW */
-	E1000_LSECTXPN0        = 0x0B018                   /* Tx SA PN 0 - RW */
-	E1000_LSECTXPN1        = 0x0B01C                   /* Tx SA PN 1 - RW */
-	E1000_LSECRXSCL        = 0x0B3D0                   /* Rx SCI Low - RW */
-	E1000_LSECRXSCH        = 0x0B3E0                   /* Rx SCI High - RW */
+	E1000_LSECTXUT    = 0x04300 /* Tx Untagged Pkt Cnt */
+	E1000_LSECTXPKTE  = 0x04304 /* Encrypted Tx Pkts Cnt */
+	E1000_LSECTXPKTP  = 0x04308 /* Protected Tx Pkt Cnt */
+	E1000_LSECTXOCTE  = 0x0430C /* Encrypted Tx Octets Cnt */
+	E1000_LSECTXOCTP  = 0x04310 /* Protected Tx Octets Cnt */
+	E1000_LSECRXUT    = 0x04314 /* Untagged non-Strict Rx Pkt Cnt */
+	E1000_LSECRXOCTD  = 0x0431C /* Rx Octets Decrypted Count */
+	E1000_LSECRXOCTV  = 0x04320 /* Rx Octets Validated */
+	E1000_LSECRXBAD   = 0x04324 /* Rx Bad Tag */
+	E1000_LSECRXNOSCI = 0x04328 /* Rx Packet No SCI Count */
+	E1000_LSECRXUNSCI = 0x0432C /* Rx Packet Unknown SCI Count */
+	E1000_LSECRXUNCH  = 0x04330 /* Rx Unchecked Packets Count */
+	E1000_LSECRXDELAY = 0x04340 /* Rx Delayed Packet Count */
+	E1000_LSECRXLATE  = 0x04350 /* Rx Late Packets Count */
+	// E1000_LSECRXOK    (_n) = (0x04360 + (0x04 * (_n))) /* Rx Pkt OK Cnt */
+	// E1000_LSECRXINV   (_n) = (0x04380 + (0x04 * (_n))) /* Rx Invalid Cnt */
+	// E1000_LSECRXNV    (_n) = (0x043A0 + (0x04 * (_n))) /* Rx Not Valid Cnt */
+	E1000_LSECRXUNSA = 0x043C0 /* Rx Unused SA Count */
+	E1000_LSECRXNUSA = 0x043D0 /* Rx Not Using SA Count */
+	E1000_LSECTXCAP  = 0x0B000 /* Tx Capabilities Register - RO */
+	E1000_LSECRXCAP  = 0x0B300 /* Rx Capabilities Register - RO */
+	E1000_LSECTXCTRL = 0x0B004 /* Tx Control - RW */
+	E1000_LSECRXCTRL = 0x0B304 /* Rx Control - RW */
+	E1000_LSECTXSCL  = 0x0B008 /* Tx SCI Low - RW */
+	E1000_LSECTXSCH  = 0x0B00C /* Tx SCI High - RW */
+	E1000_LSECTXSA   = 0x0B010 /* Tx SA0 - RW */
+	E1000_LSECTXPN0  = 0x0B018 /* Tx SA PN 0 - RW */
+	E1000_LSECTXPN1  = 0x0B01C /* Tx SA PN 1 - RW */
+	E1000_LSECRXSCL  = 0x0B3D0 /* Rx SCI Low - RW */
+	E1000_LSECRXSCH  = 0x0B3E0 /* Rx SCI High - RW */
 	/* LinkSec Tx 128-bit Key 0 - WO */
 	// E1000_LSECTXKEY0(_n)	(0x0B020 + (0x04 * (_n)))
 	/* LinkSec Tx 128-bit Key 1 - WO */
@@ -656,5 +656,3 @@ const (
 	E1000_O2BGPTC = 0x08FE4 /* OS2BMC packets received by BMC */
 	E1000_O2BSPC  = 0x0415C /* OS2BMC packets transmitted by host */
 )
-
-

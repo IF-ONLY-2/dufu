@@ -58,6 +58,9 @@ func (l2l *L2Layer) Loop() {
 		if binary.BigEndian.Uint16(frame.EtherType()) == ARPProtocolNumber {
 			ARPHandle(l2l, frame.Packet())
 		}
+		if binary.BigEndian.Uint16(frame.EtherType()) == 4 {
+			IPHandle(l2l, frame.Packet())
+		}
 	}
 }
 

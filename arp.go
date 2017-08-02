@@ -1,6 +1,6 @@
 package dufu
 
-import(
+import (
 	"fmt"
 )
 
@@ -78,8 +78,8 @@ func ARPHandle(l2l *L2Layer, packet []byte) {
 		copy(frame.Source(), l2l.HardwareAddr[:])
 		copy(frame.EtherType(), []byte{0x08, 0x06})
 		fmt.Println(buf)
-		for _,b:=range buf{
-			fmt.Printf("%.2x ",b)
+		for _, b := range buf {
+			fmt.Printf("%.2x ", b)
 		}
 		fmt.Println("")
 		go l2l.Send(Frame(buf))

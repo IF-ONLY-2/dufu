@@ -1,10 +1,10 @@
 package dufu
 
 import (
+	"net"
 	"os"
 	"syscall"
 	"unsafe"
-	"net"
 )
 
 const (
@@ -26,7 +26,7 @@ func NewTAP(name string) (*TapDevice, error) {
 		return nil, err
 	}
 
-	//  ifReq is a helper struct, to call TUNSETIFF ioctl
+	//  req is a helper struct, to call TUNSETIFF ioctl
 	req := struct {
 		Name  [0x10]byte
 		Flags uint16
@@ -34,14 +34,24 @@ func NewTAP(name string) (*TapDevice, error) {
 	}{}
 	req.Flags = IFF_TAP | IFF_NO_PI
 	copy(req.Name[:], name)
+	// create tap device
 	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, file.Fd(), uintptr(syscall.TUNSETIFF), uintptr(unsafe.Pointer(&req)))
 	if errno != 0 {
 		err = errno
 		return nil, err
 	}
-	_, _, errno = syscall.Syscall(syscall.SYS_IOCTL, file.Fd(), uintptr(syscall.SIOCGIFHWADDR), uintptr(unsafe.Pointer(&req)))
+	// req1 is a helper struct, to call SIOCGIFHWADDR ioctl
+	req1 := struct {
+		pad1             [0x12]byte
+		HardwareAddress [6]byte
+		pad2             [0x28 - 0x12 - 6]byte
+	}{}
+	// get MAC address
+	_, _, errno = syscall.Syscall(syscall.SYS_IOCTL, file.Fd(), uintptr(syscall.SIOCGIFHWADDR), uintptr(unsafe.Pointer(&req1)))
+	hwa := net.HardwareAddr(req1.HardwareAddress[:])
 	return &TapDevice{
-		File: file,
+		File:         file,
+		HardwareAddr: hwa,
 	}, err
 }
 

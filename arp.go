@@ -1,5 +1,9 @@
 package dufu
 
+import(
+	"fmt"
+)
+
 const (
 	// ARPProtocolNumber is the ARP network protocol number.
 	// TODO: make a protocol interface.
@@ -64,16 +68,20 @@ func ARPHandle(l2l *L2Layer, packet []byte) {
 		buf := make([]byte, 14+ARPSize)
 		reply := ARP(buf[14:])
 		reply.InitIPv4OverEthernetARPPacket(ARPReply)
-
-		copy(reply.SenderHardwareAddress(), []byte{}) // TODO: get from local hardware address
+		copy(reply.SenderHardwareAddress(), l2l.HardwareAddr[:])
 		copy(reply.SenderProtocolAddress(), request.TargetProtocolAddress())
 		copy(reply.TargetHardwareAddress(), request.SenderHardwareAddress())
 		copy(reply.TargetProtocolAddress(), request.SenderProtocolAddress())
 
 		frame := Frame(buf)
-		copy(frame.Destination(), request.SenderHardwareAddress())
-		copy(frame.Source(), []byte{}) // TODO: get from local hardware address
-		copy(frame.EtherType(), []byte{0x08, 0x00})
+		copy(frame.Destination(), request.SenderHardwareAddress()[:])
+		copy(frame.Source(), l2l.HardwareAddr[:])
+		copy(frame.EtherType(), []byte{0x08, 0x06})
+		fmt.Println(buf)
+		for _,b:=range buf{
+			fmt.Printf("%.2x ",b)
+		}
+		fmt.Println("")
 		go l2l.Send(Frame(buf))
 	}
 

@@ -62,27 +62,28 @@ func (a ARP) TargetHardwareAddress() []byte { const s = 8 + 6 + 4; return a[s : 
 // It is a view on to the ARP packet so it can be used to set the value.
 func (a ARP) TargetProtocolAddress() []byte { const s = 8 + 6 + 4 + 6; return a[s : s+4] }
 
-func ARPHandle(l2l *L2Layer, packet []byte) {
-	request := ARP(packet)
+func ARPHandle(l2l *L2Layer, skb *SkBuff) {
+	request := ARP(skb.Data())
 	if request.Op() == ARPRequest {
-		buf := make([]byte, 14+ARPSize)
-		reply := ARP(buf[14:])
+		newSkb := NewSkBuff(14 + ARPSize)
+		newSkb.Prepend(ARPSize)
+		reply := ARP(newSkb.Data())
 		reply.InitIPv4OverEthernetARPPacket(ARPReply)
 		copy(reply.SenderHardwareAddress(), l2l.HardwareAddr[:])
 		copy(reply.SenderProtocolAddress(), request.TargetProtocolAddress())
 		copy(reply.TargetHardwareAddress(), request.SenderHardwareAddress())
 		copy(reply.TargetProtocolAddress(), request.SenderProtocolAddress())
-
-		frame := Frame(buf)
+		newSkb.Prepend(14) // ether header size
+		frame := Frame(newSkb.Data())
 		copy(frame.Destination(), request.SenderHardwareAddress()[:])
 		copy(frame.Source(), l2l.HardwareAddr[:])
 		copy(frame.EtherType(), []byte{0x08, 0x06})
-		fmt.Println(buf)
-		for _, b := range buf {
+		fmt.Println(frame)
+		for _, b := range frame {
 			fmt.Printf("%.2x ", b)
 		}
 		fmt.Println("")
-		go l2l.Send(Frame(buf))
+		go l2l.Send(newSkb)
 	}
 
 	if request.Op() == ARPReply {

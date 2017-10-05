@@ -66,14 +66,13 @@ func (b IPv4) Message() []byte            { return b[b.HeaderLength()*4:] }
 // L3Layer is a IP layer.
 type L3Layer struct {
 	*L2Layer
-	// TODO: preprendable buffer
 }
 
 // IPHandle handles IP packet.
 func (l3 *L3Layer) IPRcv(l2l *L2Layer, skb *SkBuff) {
 	ip := IPv4(skb.Data())
 	fmt.Printf("IP Protocol 0x%x\n", ip.Protocol())
-	fmt.Printf("Header Length %d\n",ip.HeaderLength())
+	fmt.Printf("Header Length %d\n", ip.HeaderLength())
 	fmt.Printf("Header Checksum 0x%x\n", ip.Checksum())
 	fmt.Printf("IPv4 Checksum 0x%x\n", ipv4Checksum(ip[:ip.HeaderLength()*4]))
 	if ip.Protocol() == ICMPv4ProtocolNumber {
@@ -81,11 +80,11 @@ func (l3 *L3Layer) IPRcv(l2l *L2Layer, skb *SkBuff) {
 	}
 }
 
-func (l3 *L3Layer) IPSend(packet []byte) {
+func (l3 *L3Layer) IPSend(skb *SkBuff) {
 	// assume up layer has set the destination address and source address.
-	ip := IPv4(packet)
+	ip := IPv4(skb.Data())
 	ip.SetVersion(4)
-	ip.SetTotalLength(uint16(len(packet)))
+	ip.SetTotalLength(uint16(len(skb.Data())))
 	ip.SetIdentification(uint16(IpSelectIdent(ip)))
 }
 

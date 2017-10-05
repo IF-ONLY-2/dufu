@@ -17,12 +17,17 @@ func NewSkBuff(size int) *SkBuff {
 	}
 }
 
+func (skb *SkBuff) TrimFront(size int) {
+	fmt.Println("call TrimFron, index", skb.index)
+	skb.index += size
+}
+
 func (skb *SkBuff) Data() []byte {
 	fmt.Println("call Data, index", skb.index)
 	return skb.buf[skb.index:]
 }
 
-func (skb *SkBuff) Prepend(size int) {
+func (skb *SkBuff) Prepend(size uint8) {
 	fmt.Println("call Prepend, index", skb.index)
-	skb.index -= size
+	skb.index -= int(size)
 }

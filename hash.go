@@ -1,6 +1,16 @@
 package dufu
 
-var randIV uint32
+import (
+	"encoding/binary"
+	"math/rand"
+	"sync"
+	"time"
+)
+
+var (
+	randIV uint32
+	once   sync.Once
+)
 
 func IpSelectIdent(ip IPv4) uint32 {
 	once.Do(func() {
@@ -40,6 +50,8 @@ func JHash3Words(a, b, c, initval uint32) uint32 {
 	b -= rol32(a, 14)
 	c ^= b
 	c -= rol32(b, 24)
+
+	return c
 }
 
 // rol32 rotates a 32-bit value left, v is the value, shift is the bits to roll.

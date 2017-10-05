@@ -32,38 +32,42 @@ func (f Frame) EtherType() []byte { return f[12:14] }
 // Packet returns frame payload.
 func (f Frame) Packet() []byte { return f[14:] }
 
-func (l2l *L2Layer) Read() (Frame, error) {
+func (l2l *L2Layer) Read() (*SkBuff, error) {
 	var (
-		buf   [MaxFrameSize]byte
-		frame Frame
+		buf [MaxFrameSize]byte
 	)
 
 	n, err := l2l.TapDevice.Read(buf[:])
 	if err != nil {
-		return frame, err
+		return nil, err
 	}
-	frame = Frame(buf[:n])
-	return frame, nil
+	return &SkBuff{buf: buf[:n]}, nil
 }
 
 func (l2l *L2Layer) Loop() {
 	for {
-		frame, err := l2l.Read()
+		skb, err := l2l.Read()
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
+		frame := Frame(skb.Data())
 		fmt.Println("source", net.HardwareAddr(frame.Source()), "dest", net.HardwareAddr(frame.Destination()))
 		fmt.Printf("0x%.4x\n", binary.BigEndian.Uint16(frame.EtherType()))
 		if binary.BigEndian.Uint16(frame.EtherType()) == ARPProtocolNumber {
-			ARPHandle(l2l, frame.Packet())
+			skb.TrimFront(EthHeaderSize)
+			ARPHandle(l2l, skb)
 		}
 		if binary.BigEndian.Uint16(frame.EtherType()) == 4 {
-			IPHandle(l2l, frame.Packet())
+			skb.TrimFront(EthHeaderSize)
+			(&L3Layer{}).IPRcv(l2l, skb)
 		}
 	}
 }
 
 func (l2l *L2Layer) Send(frame Frame) {
-	l2l.TapDevice.Write([]byte(frame))
+	_, err := l2l.TapDevice.Write([]byte(frame))
+	if err != nil {
+		panic(err)
+	}
 }

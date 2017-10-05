@@ -17,8 +17,6 @@ const (
 	ARPReply   uint16 = 2
 )
 
-var ARPCache map[[6]byte][4]byte
-
 // ARP represents the arp packet.
 type ARP []byte
 
@@ -83,7 +81,7 @@ func ARPHandle(l2l *L2Layer, skb *SkBuff) {
 			fmt.Printf("%.2x ", b)
 		}
 		fmt.Println("")
-		go l2l.Send(newSkb)
+		go l2l.Send(frame)
 	}
 
 	if request.Op() == ARPReply {
